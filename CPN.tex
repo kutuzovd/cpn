@@ -1,0 +1,213 @@
+\documentclass[unicode, notheorems]{beamer}
+%\usepackage{pscyr}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage{graphicx}
+%\usepackage[figuresright]{rotating}
+% пакет hyperref используется для гиперссылок (сайт, почтовый адрес и т.п.)
+% для Beamer опции не используют
+\usepackage{hyperref}
+\usepackage{color}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows,decorations.pathmorphing,shapes,snakes,automata,backgrounds,positioning,fit,petri}
+
+%для отображения нумерации в рисунках и таблицах
+\setbeamertemplate{caption}[numbered]
+
+%\usetheme{Berlin}
+\usetheme{Szeged}
+% Это только часть возможных стилей, некоторые из них могут содержать
+% дополнительные опции
+% default, AnnArbor, Antibes, Bergen, Berkeley, Berlin, Boadilla, CambridgeUS,
+%Copenhagen, Darmstadt, Dresden, Frankfurt, Goettingen, Hannover,
+%Ilmenau, JuanLesPins, Luebeck, Madrid, Malmoe, Marburg, Montpellier,
+%PaloAlto, Pittsburgh, Rochester, Singapore, Szeged, Warsaw.
+
+\title{Моделирование дскретно-событийных систем}
+\subtitle{Сети Петри}
+\author[Д.В.Кутузов]{Кутузов Денис Валерьевич}
+\institute[АГТУ]{<<Астраханский государственный технический университет>>}
+\date{Астрахань, 2018~г.}
+
+
+%Стили рисования для сети Петри (места и переходы)
+%   \tikzset{
+%   place/.style={
+%     circle,
+%     thick,
+%     draw=black,
+%     %fill=blue!20,
+%     minimum size=6mm
+%   },
+%   red_place/.stile={
+%     place,
+%     draw=red!75,
+%     fill=red!20
+%   },
+%   transition/.style={
+%     rectangle,
+%     thick,
+%     fill=black,
+%     minimum width=8mm,
+%     inner ysep=2pt
+%     }
+%   }            
+
+\tikzstyle{place}=[circle,thick,draw=black!75,minimum size=6mm]
+\tikzstyle{red place}=[place,draw=red!75,fill=red!20]
+\tikzstyle{transition}=[rectangle,thick,draw=black,fill=black,minimum height=8mm]
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+% \begin{frame}[allowframebreaks]
+% \tableofcontents
+% \end{frame}
+
+\section{Сети Петри}
+%\subsection{Уровни технического творчества}
+
+\begin{frame}{Историческая справка}
+Сети Петри изначально разрабатывались для моделирования систем с параллельными взаимодействующими компонентами.
+\newline
+\begin{columns}
+  \begin{column}{.3\linewidth}  % задаём ширину первой колонки
+    \begin{figure}[!h]
+    \centering \pgfimage[width=0.8\textwidth]{Carl_adam_petri}
+    \end{figure}
+   \end{column}
+  \begin{column}{.6\linewidth}  % задаём ширину второй колонки
+   Впервые были предложены Карлом Адамом Петри в 1962 году в докторской диссертации <<Связь автоматов>> 
+(Kommunikation mit Automaten). В этой работе он сформулировал основные понятия теории связи асинхронных 
+компонент вычислительной системы  
+  \end{column}
+\end{columns}
+\end{frame}
+ 
+
+
+\begin{frame}{Возможности моделирования}
+Сети Петри использовуюся для моделирования динамических дискретно-событийных систем:
+\begin{enumerate}
+  \item Вычислительных систем
+  \item Автоматов
+  \item Процессов
+  \item Протоколов
+  \item Некоторых СМО (таймированные сети)
+  \item Функционирования служб и отделов организации
+  \item Организации технологических цепочек
+  \item В робототехнике (для моделирования поведения роботов)
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}{Неформальное определение}
+Сеть Петри состоит из мест (place), переходов (transition), соединяющих их дуг (edge) и фишек или маркеров (token). 
+
+\begin{figure}[!h]
+\begin{tikzpicture}[node distance=1.3cm,>=stealth',bend angle=45,auto]
+    \node [place,tokens=1] (p1) [label=above:$p_{1}$, label=below:место] {};
+    
+    \node [transition] (t1) [right=of p1, label=above:$t_{1}$, label=below:переход] {}
+      edge [pre] (p1);
+    
+    \node [place] (p2) [right=of t1, label=above:$p_{2}$, label=below:место] {}
+      edge [pre] (t1);
+\end{tikzpicture}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Функционирование сети Петри}
+Срабатываение перехода $t_{i}$ представляет собой удаление одного (или нескольких) токенов из
+каждой позиции $p_{i}$, если имеется исходящая дуга из $p_{i}$ в $t_{i}$, и добавление токена в
+позицию $p_{j}$, если имеется заходящая дуга из  $t_{i}$  в $p_{j}$.\\
+
+\begin{columns}
+  \begin{column}{.45\linewidth}  % задаём ширину первой колонки
+    До срабатывания перехода $t_{1}$ (начальная маркировка):
+    \begin{figure}[!h]
+   \begin{tikzpicture}[node distance=1.3cm,>=stealth',bend angle=45,auto]
+    \node [place,tokens=1] (p1) [label=above:$p_{1}$] {};
+    
+    \node [transition] (t1) [right=of p1, label=above:$t_{1}$] {}
+      edge [pre] (p1);
+    
+    \node [place] (p2) [right=of t1, label=above:$p_{2}$] {}
+      edge [pre] (t1);
+\end{tikzpicture}
+\end{figure}
+   \end{column}
+  \begin{column}{.5\linewidth}  % задаём ширину второй колонки
+   После срабатывания перехода $t_{1}$ (конечная маркировка):
+\begin{figure}[!h]
+\begin{tikzpicture}[node distance=1.3cm,>=stealth',bend angle=45,auto]
+    \node [place] (p1) [label=above:$p_{1}$] {};
+    
+    \node [transition] (t1) [right=of p1, label=above:$t_{1}$] {}
+      edge [pre] (p1);
+    
+    \node [place,tokens=1] (p2) [right=of t1, label=above:$p_{2}$] {}
+      edge [pre] (t1);
+\end{tikzpicture}
+\end{figure}
+  \end{column}
+\end{columns}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Функционирование сети Петри}
+
+\begin{columns}
+  \begin{column}{.5\linewidth}  % задаём ширину первой колонки
+    До срабатывания перехода $t_{1}$ (начальная маркировка):
+\begin{figure}[!h]
+\begin{tikzpicture}[node distance=1.3cm,>=stealth',bend angle=45,auto]
+    \node [place,tokens=1] (p1) [label=above:$p_{1}$] {};
+    
+    \node [place,tokens=1] (p2) [below=of p1, label=above:$p_{2}$] {};
+        
+    \node [transition] (t1) [below right=0.25cm and 2cm of p1, label=above:$t_{1}$] {}
+      edge [pre,bend right] (p1)
+      edge [pre,bend left] (p2);
+    
+    \node [place] (p3) [right=of t1, label=above:$p_{3}$] {}
+      edge [pre] (t1);
+\end{tikzpicture}
+\end{figure}
+   \end{column}
+  
+  \begin{column}{.5\linewidth}  % задаём ширину второй колонки
+   После срабатывания перехода $t_{1}$ (конечная маркировка):
+\begin{figure}[!h]
+\begin{tikzpicture}[node distance=1.3cm,>=stealth',bend angle=45,auto]
+    \node [place] (p1) [label=above:$p_{1}$] {};
+    
+    \node [place] (p2) [below=of p1, label=above:$p_{2}$] {};
+        
+    \node [transition] (t1) [below right=0.25cm and 2cm of p1, label=above:$t_{1}$] {}
+      edge [pre,bend right] (p1)
+      edge [pre,bend left] (p2);
+    
+    \node [place,tokens=1] (p3) [right=of t1, label=above:$p_{3}$] {}
+      edge [pre] (t1);
+\end{tikzpicture}
+\end{figure}
+  \end{column}
+\end{columns}
+\end{frame}
+
+
+\end{document}
+	
